@@ -21,6 +21,7 @@ type watchedFiles struct {
 type config struct {
 	Log struct {
 		AlertKeywords []string
+		Path          string
 	}
 	Telegram struct {
 		Token           string
@@ -32,32 +33,15 @@ type config struct {
 var cfg config
 
 type templateData struct {
-	Line    string
+	String  string
 	File    string
 	Keyword string
 }
 
 func main() {
-	//watchOneFile()
 	loadConfig(&cfg, "config.toml")
 	telegramInit()
 	watching()
-}
-
-func watchOneFile() {
-	file, err := os.Open("test.log")
-	if err != nil {
-		log.Fatalln(err)
-	}
-	r := bufio.NewReader(file)
-	for {
-		line, err := r.ReadString('\n')
-		if err != nil {
-			//log.Fatalln(err)
-		} else {
-			log.Printf("Line: %s", line)
-		}
-	}
 }
 
 func loadConfig(cfg interface{}, filename string) {
@@ -82,7 +66,7 @@ func watching() {
 
 	go catchEvent(watch, files)
 
-	if err := watch.AddRecursive("."); err != nil {
+	if err := watch.AddRecursive(cfg.Log.Path); err != nil {
 		log.Fatalln(err)
 	}
 
@@ -143,13 +127,13 @@ func newWatchedFiles() *watchedFiles {
 func (w *watchedFiles) check(filename string) {
 	r := w.files[filename]
 	for {
-		line, err := r.ReadString('\n')
+		str, err := r.ReadString('\n')
 		if err != nil {
 			break
 		}
 		for _, keyword := range cfg.Log.AlertKeywords {
-			if strings.Contains(line, keyword) {
-				data := templateData{Line: line, File: filename, Keyword: keyword}
+			if strings.Contains(str, keyword) {
+				data := templateData{String: str, File: filename, Keyword: keyword}
 				// parse line
 				t, err := template.New("").Parse(cfg.Telegram.MessageTemplate)
 				if err != nil {
