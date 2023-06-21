@@ -1,0 +1,6 @@
+[Log]
+AlertKeywords = ["1SIG", "4SHP", "2SND", "3MOV"]
+[Telegram]
+Token = "1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+ChatId = 123456789
+MessageTemplate = "Увага, з'явилося ключеве слово {{.Keyword}} в файлі {{.File}} в строчці: {{.Line}}"
